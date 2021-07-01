@@ -7,11 +7,11 @@ const AuthorSchema = mongoose.Schema({
 
     id : Number,
     name :String,
-    books : [String],
+    books : [String]
     
 
 });
 
-const AuthorModel = mongoose.model("author",AuthorSchema);
+const AuthorModel = mongoose.model("authors",AuthorSchema);
 
 module.exports= AuthorModel;
