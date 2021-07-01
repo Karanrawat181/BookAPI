@@ -1,15 +1,53 @@
+
+require("dotenv").config();
+
+
+///frame work
 const express = require("express");
 
+const mongoose = require("mongoose");
+
+
+//database
 const database = require("./database");
 
 
-
-
+//initializing express
 const booky = express();
 
-
-
+//configuration
 booky.use(express.json());
+
+
+
+//----------------------------- Model ----------------------------------------------
+
+
+const BookModel = require("./book");
+
+const AuthorModel = require("./author");
+
+const PublicationModel = require("./publication");
+
+
+
+
+
+
+console.log(process.env.MONGO_URL);
+
+mongoose
+.connect(process.env.MONGO_URL,
+{
+
+    useNewUrlParser: true,
+    useUnifiedTopology : true,
+    useFindAndModify: false,
+    useCreateIndex: true
+
+})
+
+.then(() => console.log("connection established!!!!!!!"));
 
 
 /*
@@ -41,11 +79,11 @@ Methods               GET
 
 */
 
-booky.get("/is/:isbn",(req,res)=>{
+booky.get("/is/:isbn",async(req,res)=>{
 
-    const getSpecificBook = database.books.filter((book)=>book.ISBN === req.params.isbn);
+    const getSpecificBook = await BookModel.findOne({ISBN : req.params.isbn}); 
 
-    if(getSpecificBook.length === 0){
+    if(!getSpecificBook){
          
         return res.json({error : `no book found ${req.params.isbn}`,});
 
@@ -84,10 +122,29 @@ booky.get("/c/:category",(req,res)=>{
 });
 
 
+
+//--------------------------add a book
+
+
+
+booky.put("/book/new", async(req,res)=>{
+ 
+
+   const {newBook} = req.body;
+    
+   
+   
+
+
+
+});
+
+
+
 /*
 
 Route                 / 
-Description           to get all books
+Description           to get all author
 Access                public
 Parameter             NONE
 Methods               GET
@@ -420,21 +477,110 @@ return res.json({publication: database.publication, book : database.books});
 
 
 
+/*
+
+Route                 /book/delete
+Description           delete a book
+Access                public
+Parameter             isbn
+Methods               DELETE
+
+*/
+
+
+booky.delete("/book/delete/:isbn",(req,res)=>{
+
+  const updateDatabase = database.books.filter((book)=> 
+
+         book.ISBN !== req.params.isbn
+
+
+  );
+
+
+database.books = updateDatabase;
+
+return res.json({books : database.books});
+
+
+});
 
 
 
 
+/*
+
+Route                 /book/delete/author
+Description           delete a author form a book
+Access                public
+Parameter             isbn
+Methods               DELETE
+
+*/
+booky.delete("/book/delete/author/:isbn/:authorId",(req,res)=>{
+
+    database.books.forEach((book)=>{
+
+   if(book.ISBN === req.params.isbn){
+
+  const newAuthorList = book.author.filter((author)=> 
+  author !== parseInt(req.params.authorId)
+  );
+ 
+  book.author = newAuthorList;
+  return;
+
+   } 
+
+   
+
+});
+
+database.author.forEach((author)=>{
+ 
+    if(author.id === parseInt(req.params.authorId)){
+
+ const newBookList = author.books.filter((book)=>
+   book !== req.params.isbn
+ );
+ author.books = newBookList;
+return;
+
+    }
+
+});
+
+return res.json({Books : database.books , author: database.author });
+
+
+});
 
 
 
+/*
+
+Route                 /book/delete/author
+Description           delete a author
+Access                public
+Parameter             author
+Methods               DELETE
+
+*/
 
 
+booky.delete("/author/delete/:authorId",(req,res)=>{
 
+ const newBookdata =  database.author.filter((author)=>
+  
+ author.id !== parseInt(req.params.authorId) 
 
+ );
+     
+database.author = newBookdata ;
 
+return res.json({ book: database.books , author: database.author });
 
-
-
+});
 
 
 
