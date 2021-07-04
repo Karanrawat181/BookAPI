@@ -6,7 +6,10 @@ const PublicationSchema = mongoose.Schema({
 
 
     id : Number,
-    name :String,
+    name :{
+        type : String,
+        required : true,
+    },
     books : [String]
     
 

@@ -7,7 +7,7 @@ const AuthorSchema = mongoose.Schema({
 
     id : Number,
     name :String,
-    books : [String]
+    books : [String],
     
 
 });
